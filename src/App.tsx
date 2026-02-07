@@ -1,22 +1,24 @@
 import { useEffect, useReducer } from "react";
-import { Error, Header, Loader, Main, StartScreen } from "./components";
-import type { IQuestion } from "./types";
-
-interface IState {
-  questions: IQuestion[];
-  status: "loading" | "error" | "ready" | "active" | "finished";
-}
-
-type TAction =
-  | { type: "dataRecived"; payload: IQuestion[] }
-  | { type: "dataFailed" };
+import {
+  Error,
+  Header,
+  Loader,
+  Main,
+  NextButton,
+  Question,
+  StartScreen,
+} from "./components";
+import type { IState, TAction } from "./types";
 
 const initialState: IState = {
   questions: [],
   status: "loading",
+  index: 0,
+  answer: null,
+  points: 0,
 };
 
-function reducer(state: IState, action: TAction) {
+function reducer(state: IState, action: TAction): IState {
   switch (action.type) {
     case "dataRecived":
       return {
@@ -31,13 +33,38 @@ function reducer(state: IState, action: TAction) {
         status: "error",
       };
 
+    case "start":
+      return {
+        ...state,
+        status: "active",
+      };
+
+    case "newAnswer": {
+      const question = state.questions.at(state.index);
+
+      return {
+        ...state,
+        answer: action.payload,
+        points:
+          action.payload === question?.correctOption
+            ? state.points + question.points
+            : state.points,
+      };
+    }
+
+    case "nextQuestion":
+      return { ...state, index: state.index + 1, answer: null };
+
     default:
       throw new Error("Action unknown");
   }
 }
 
 function App() {
-  const [{ questions, status }, dispatch] = useReducer(reducer, initialState);
+  const [{ questions, status, index, answer }, dispatch] = useReducer(
+    reducer,
+    initialState,
+  );
 
   const numQuestion = questions.length;
 
@@ -69,7 +96,20 @@ function App() {
       <Main>
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
-        {status === "ready" && <StartScreen numQuestions={numQuestion} />}
+        {status === "ready" && (
+          <StartScreen numQuestions={numQuestion} dispatch={dispatch} />
+        )}
+        {status === "active" && (
+          <>
+            {" "}
+            <Question
+              question={questions[index]}
+              dispatch={dispatch}
+              answer={answer}
+            />
+            <NextButton dispatch={dispatch} answer={answer} />
+          </>
+        )}
       </Main>
     </div>
   );
