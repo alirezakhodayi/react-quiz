@@ -5,5 +5,15 @@ import { Main } from "./Main";
 import { StartScreen } from "./StartScreen";
 import { Question } from "./Question";
 import { NextButton } from "./NextButton";
+import { Progress } from "./Progress";
 
-export { Header, Main, Loader, Error, StartScreen, Question, NextButton };
+export {
+  Header,
+  Main,
+  Loader,
+  Error,
+  StartScreen,
+  Question,
+  NextButton,
+  Progress,
+};
