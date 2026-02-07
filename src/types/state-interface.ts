@@ -6,4 +6,5 @@ export interface IState {
   index: number;
   answer: null | number;
   points: number;
+  highScore: number;
 }

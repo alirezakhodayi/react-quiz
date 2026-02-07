@@ -5,4 +5,5 @@ export type TAction =
   | { type: "dataFailed" }
   | { type: "start" }
   | { type: "newAnswer"; payload: number }
-  | { type: "nextQuestion" };
+  | { type: "nextQuestion" }
+  | { type: "finish" };
