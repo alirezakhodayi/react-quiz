@@ -1,7 +1,9 @@
 import { useEffect, useReducer } from "react";
+
 import {
-  Error,
+  ErrorScreen,
   FinishScreen,
+  Footer,
   Header,
   Loader,
   Main,
@@ -9,7 +11,9 @@ import {
   Progress,
   Question,
   StartScreen,
+  Timer,
 } from "./components";
+
 import type { IState, TAction } from "./types";
 
 const initialState: IState = {
@@ -19,7 +23,10 @@ const initialState: IState = {
   answer: null,
   points: 0,
   highScore: 0,
+  secondsRemaining: 0,
 };
+
+const SECONDS_PER_QUESTION = 30;
 
 function reducer(state: IState, action: TAction): IState {
   switch (action.type) {
@@ -40,6 +47,7 @@ function reducer(state: IState, action: TAction): IState {
       return {
         ...state,
         status: "active",
+        secondsRemaining: state.questions.length * SECONDS_PER_QUESTION,
       };
 
     case "newAnswer": {
@@ -65,6 +73,19 @@ function reducer(state: IState, action: TAction): IState {
         highScore:
           state.points > state.highScore ? state.points : state.highScore,
       };
+    case "restart":
+      return {
+        ...initialState,
+        questions: state.questions,
+        status: "ready",
+      };
+
+    case "tick":
+      return {
+        ...state,
+        secondsRemaining: state.secondsRemaining - 1,
+        status: state.secondsRemaining === 0 ? "finished" : state.status,
+      };
 
     default:
       throw new Error("Action unknown");
@@ -72,8 +93,10 @@ function reducer(state: IState, action: TAction): IState {
 }
 
 function App() {
-  const [{ questions, status, index, answer, points, highScore }, dispatch] =
-    useReducer(reducer, initialState);
+  const [
+    { questions, status, index, answer, points, highScore, secondsRemaining },
+    dispatch,
+  ] = useReducer(reducer, initialState);
 
   const numQuestion = questions.length;
   const maxPossiblePoints = questions.reduce(
@@ -92,11 +115,18 @@ function App() {
         }
 
         const data = await response.json();
+
         dispatch({ type: "dataRecived", payload: data });
-      } catch (err: unknown) {
-        if (err instanceof Error) console.log(err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          // We know 'err' is a standard JavaScript Error object
+          console.log(err.message);
+        } else {
+          // Handle non-standard errors (e.g., if a string was thrown)
+          console.log("An unexpected error occurred:", err);
+        }
       } finally {
-        console.log("final");
+        console.log("Ready");
       }
     }
 
@@ -108,7 +138,7 @@ function App() {
       <Header />
       <Main>
         {status === "loading" && <Loader />}
-        {status === "error" && <Error />}
+        {status === "error" && <ErrorScreen />}
         {status === "ready" && (
           <StartScreen numQuestions={numQuestion} dispatch={dispatch} />
         )}
@@ -126,12 +156,15 @@ function App() {
               dispatch={dispatch}
               answer={answer}
             />
-            <NextButton
-              dispatch={dispatch}
-              answer={answer}
-              index={index}
-              numQuestions={numQuestion}
-            />
+            <Footer>
+              <Timer dispatch={dispatch} secondsRemaining={secondsRemaining} />
+              <NextButton
+                dispatch={dispatch}
+                answer={answer}
+                index={index}
+                numQuestions={numQuestion}
+              />
+            </Footer>
           </>
         )}
         {status === "finished" && (
@@ -139,6 +172,7 @@ function App() {
             points={points}
             maxPossiblePoints={maxPossiblePoints}
             highScore={highScore}
+            dispatch={dispatch}
           />
         )}
       </Main>

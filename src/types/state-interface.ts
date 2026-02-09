@@ -7,4 +7,5 @@ export interface IState {
   answer: null | number;
   points: number;
   highScore: number;
+  secondsRemaining: number;
 }

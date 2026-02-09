@@ -6,4 +6,6 @@ export type TAction =
   | { type: "start" }
   | { type: "newAnswer"; payload: number }
   | { type: "nextQuestion" }
-  | { type: "finish" };
+  | { type: "finish" }
+  | { type: "restart" }
+  | { type: "tick" };

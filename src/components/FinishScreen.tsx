@@ -1,9 +1,18 @@
+import type { TAction } from "../types";
+
 interface IProps {
   points: number;
   maxPossiblePoints: number;
   highScore: number;
+  dispatch: React.Dispatch<TAction>;
 }
-function FinishScreen({ points, maxPossiblePoints, highScore }: IProps) {
+
+function FinishScreen({
+  points,
+  maxPossiblePoints,
+  highScore,
+  dispatch,
+}: IProps) {
   const percentage = (points / maxPossiblePoints) * 100;
 
   let emoji;
@@ -21,6 +30,12 @@ function FinishScreen({ points, maxPossiblePoints, highScore }: IProps) {
         {maxPossiblePoints} ({Math.ceil(percentage)}%)
       </p>
       <p className="highscore">(Highscore: {highScore} points)</p>
+      <button
+        className="btn btn-ui"
+        onClick={() => dispatch({ type: "restart" })}
+      >
+        Restart Quiz
+      </button>
     </>
   );
 }
